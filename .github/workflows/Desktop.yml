@@ -49,6 +49,7 @@ jobs:
         run: |
           haxelib install hxcpp
           haxelib install thx.core
+          haxelib install thx.semver
           haxelib install lime
           haxelib install openfl
           haxelib install flixel
@@ -56,8 +57,8 @@ jobs:
           haxelib install flixel-addons
           haxelib install flxanimate
           haxelib install json2object
-          haxelib git polymod https://github.com/T5mpler/polymod-dnb
-          haxelib git hscript https://github.com/HaxeFoundation/hscript.git
+          haxelib git polymod https://github.com/PabloelproxD210/Polymod.git
+          haxelib git hscript https://github.com/T5mpler/hscript-dnb
           haxelib install hxvlc
           haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
           haxelib install hmm

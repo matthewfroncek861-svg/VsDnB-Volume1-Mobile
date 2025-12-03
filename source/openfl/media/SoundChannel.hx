@@ -32,7 +32,7 @@ import lime.media.openal.AL;
 	public var position(get, set):Float;
 	public var soundTransform(get, set):SoundTransform;
 
-	public var loopTime(get, set):Float;
+	public var loopTime(get, set):Int;
 	public var endTime(get, set):Null<Float>;
 	public var pitch(get, set):Float;
 	public var loops(get, set):Int;
@@ -188,7 +188,7 @@ import lime.media.openal.AL;
 
 	// ------------------ Loop Time ------------------
 
-	@:noCompletion private function get_loopTime():Float {
+	@:noCompletion private function get_loopTime():Int {
 		#if lime
 		return __isValid ? __source.loopTime : -1;
 		#else
@@ -196,7 +196,7 @@ import lime.media.openal.AL;
 		#end
 	}
 
-	@:noCompletion private function set_loopTime(value:Float):Float {
+	@:noCompletion private function set_loopTime(value:Int):Int {
 		#if lime
 		if (__isValid) __source.loopTime = value;
 		#end

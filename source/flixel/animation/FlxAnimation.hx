@@ -5,7 +5,7 @@ import flixel.FlxG;
 /**
  * Just a helper structure for the `FlxSprite` animation system.
  */
-class FlxFrameation extends FlxBaseAnimation
+class FlxFrame extends FlxBaseAnimation
 {
 	/**
 	 * Animation frameRate - the speed in frames per second that the animation should play at.
@@ -244,9 +244,9 @@ class FlxFrameation extends FlxBaseAnimation
 		return curframeDuration > 0 ? curframeDuration : frameDuration;
 	}
 
-	override public function clone(newParent:FlxFrameationController):FlxFrameation
+	override public function clone(newParent:FlxFrameationController):FlxFrame
 	{
-		return new FlxFrameation(newParent, name, frames, frameRate, looped, flipX, flipY);
+		return new FlxFrame(newParent, name, frames, frameRate, looped, flipX, flipY);
 	}
 
 	function set_frameRate(value:Float):Float

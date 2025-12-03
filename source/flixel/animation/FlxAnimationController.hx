@@ -8,7 +8,7 @@ import flixel.util.FlxSignal;
 
 using StringTools;
 
-class FlxFrameationController implements IFlxDestroyable
+class FlxAnimationController implements IFlxDestroyable
 {
 	/**
 	 * Property access for currently playing animation (warning: can be `null`).
@@ -133,7 +133,7 @@ class FlxFrameationController implements IFlxDestroyable
 		}
 	}
 
-	public function copyFrom(controller:FlxFrameationController):FlxFrameationController
+	public function copyFrom(controller:FlxAnimationController):FlxAnimationController
 	{
 		destroyAnimations();
 
@@ -157,7 +157,7 @@ class FlxFrameationController implements IFlxDestroyable
 		return this;
 	}
 
-	public function createPrerotated(?Controller:FlxFrameationController):Void
+	public function createPrerotated(?Controller:FlxAnimationController):Void
 	{
 		destroyAnimations();
 		Controller = (Controller != null) ? Controller : this;

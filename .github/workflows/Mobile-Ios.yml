@@ -75,44 +75,44 @@ jobs:
               ""
           ]
 
-def patch_file(path):
-    try:
-        text = open(path, "r", errors="ignore").read()
-        if "#undef Nil" in text:
+          def patch_file(path):
+              try:
+                  text = open(path, "r", errors="ignore").read()
+                  if "#undef Nil" in text:
             print("[SKIP] Already patched:", path)
             return
-        with open(path, "w", errors="ignore") as f:
+                  with open(path, "w", errors="ignore") as f:
             f.write("\n".join(PATCH_LINES) + text)
-        print("[PATCHED]", path)
-    except Exception as e:
-        print("[ERROR]", path, e)
+                  print("[PATCHED]", path)
+              except Exception as e:
+                  print("[ERROR]", path, e)
 
-print("=== AUTO-DETECTING ALL thx FOLDERS ===")
+          print("=== AUTO-DETECTING ALL thx FOLDERS ===")
 
-patch_count = 0
-thx_dirs = []
+          patch_count = 0
+          thx_dirs = []
 
-for root, dirs, files in os.walk(".", topdown=True):
-    for d in dirs:
-        if d == "thx":
+          for root, dirs, files in os.walk(".", topdown=True):
+              for d in dirs:
+                  if d == "thx":
             full = os.path.join(root, d)
             thx_dirs.append(full)
 
-print("\nDetected thx directories:")
-for t in thx_dirs:
-    print("  -", t)
+          print("\nDetected thx directories:")
+          for t in thx_dirs:
+              print("  -", t)
 
-print("\nPatching...\n")
+          print("\nPatching...\n")
 
-for folder in thx_dirs:
-    for root, dirs, files in os.walk(folder):
-        for f in files:
-            if f.endswith((".h", ".hpp", ".cpp", ".mm")):
+          for folder in thx_dirs:
+              for root, dirs, files in os.walk(folder):
+                  for f in files:
+                      if f.endswith((".h", ".hpp", ".cpp", ".mm")):
                 patch_file(os.path.join(root, f))
                 patch_count += 1
 
-print("\n=== Done. Patched", patch_count, "files across ALL platforms ===")
-EOF
+          print("\n=== Done. Patched", patch_count, "files across ALL platforms ===")
+          EOF
 
           python3 fix_thx_nil_all_targets.py || true
 

@@ -10,6 +10,9 @@ import flixel.util.FlxStringUtil;
  */
 class FlxBasic implements IFlxDestroyable
 {
+	/** Universal z-index for sorting */
+    public var zIndex:Int = 0;
+
 	#if FLX_DEBUG
 	/**
 	 * Static counters for performance tracking.

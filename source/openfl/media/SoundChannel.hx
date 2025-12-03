@@ -98,23 +98,28 @@ import lime.media.AudioSource;
         #end
     }
 
-    // -------------------------------------------------------
-    // Position (Lime 9 uses floats)
-    // -------------------------------------------------------
-    @:noCompletion private function get_position():Float {
-        #if lime
-        return __isValid ? this.position : 0;
-        #else
-        return 0;
-        #end
-    }
+// ----------------------------------------
+// POSITION (Lime 9: use offset instead of time)
+// offset is in seconds, OpenFL position is milliseconds
+// ----------------------------------------
+@:noCompletion private function get_position():Float {
+    #if lime
+    if (!__isValid || __source == null) return 0;
+    return __source.offset * 1000.0; // convert seconds → ms
+    #else
+    return 0;
+    #end
+}
 
-    @:noCompletion private function set_position(v:Float):Float {
-        #if lime
-        if (__isValid) this.position = v;
-        #end
-        return v;
+@:noCompletion private function set_position(v:Float):Float {
+    #if lime
+    if (__isValid && __source != null) {
+        __source.offset = v / 1000.0; // ms → seconds
+        __source.play(); // restart playback from new position
     }
+    #end
+    return v;
+}
 
     // -------------------------------------------------------
     // Sound Transform

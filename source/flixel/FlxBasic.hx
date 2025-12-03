@@ -4,17 +4,12 @@ import flixel.group.FlxContainer;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxStringUtil;
 
-import flixel.group.FlxContainer;
-
 /**
  * This is a useful "generic" Flixel object. Both `FlxObject` and
  * `FlxGroup` extend this class. Has no size, position or graphical data.
  */
 class FlxBasic implements IFlxDestroyable
 {
-	/** Universal z-index for sorting */
-    public var zIndex:Int = 0;
-
 	#if FLX_DEBUG
 	/**
 	 * Static counters for performance tracking.

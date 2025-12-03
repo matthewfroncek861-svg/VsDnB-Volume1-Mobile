@@ -128,9 +128,6 @@ using flixel.util.FlxColorTransformUtil;
  */
 class FlxSprite extends FlxObject
 {
-	/** Universal z-index for sorting */
-    public var zIndex:Int = 0;
-
 	/**
 	 * The default value for `antialiasing` across all `FlxSprites`,
 	 * defaults to `false`.

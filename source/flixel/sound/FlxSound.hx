@@ -11,10 +11,6 @@ import openfl.media.Sound;
 import openfl.media.SoundChannel;
 import openfl.media.SoundTransform;
 
-/**
- * FlxSound — Lime 9 / OpenFL 9 compatible
- * Removes deprecated AudioSource fields and uses SoundChannel.position
- */
 class FlxSound extends FlxBasic
 {
     public var playing(get, never):Bool;
@@ -24,20 +20,25 @@ class FlxSound extends FlxBasic
 
     public var persist:Bool = false;
 
-    public var name(default,null):String;
-    public var artist(default,null):String;
+    public var name(default, null):String;
+    public var artist(default, null):String;
 
     public var amplitude(default,null):Float = 0;
     public var amplitudeLeft(default,null):Float = 0;
     public var amplitudeRight(default,null):Float = 0;
 
     public var autoDestroy:Bool = false;
+
     public var onComplete:Void->Void;
 
     public var pan(get,set):Float;
+
     public var volume(get,set):Float;
+
     public var pitch(get,set):Float;
+
     public var time(get,set):Float;
+
     public var length(get,never):Float;
 
     public var group(default,set):FlxSoundGroup;
@@ -46,6 +47,7 @@ class FlxSound extends FlxBasic
     public var loopTime:Int = 0;
 
     public var endTime:Null<Int>;
+
     public var fadeTween:FlxTween;
 
     var _sound:Sound;
@@ -55,6 +57,7 @@ class FlxSound extends FlxBasic
     var _paused:Bool = false;
     var _volume:Float = 1.0;
     var _volumeAdjust:Float = 1.0;
+
     var _time:Float = 0;
     var _length:Float = 0;
 
@@ -67,6 +70,10 @@ class FlxSound extends FlxBasic
         super();
         reset();
     }
+
+    // -------------------------------------------------------
+    // RESET + DESTROY
+    // -------------------------------------------------------
 
     function reset():Void
     {
@@ -81,13 +88,18 @@ class FlxSound extends FlxBasic
         loopTime = 0;
         endTime = null;
 
+        _target = null;
+        _radius = 0;
+        _proximityPan = false;
+
         amplitude = 0;
         amplitudeLeft = 0;
         amplitudeRight = 0;
 
         autoDestroy = false;
 
-        if (_transform == null) _transform = new SoundTransform();
+        if (_transform == null)
+            _transform = new SoundTransform();
         _transform.pan = 0;
     }
 
@@ -105,36 +117,43 @@ class FlxSound extends FlxBasic
         super.destroy();
     }
 
+    // -------------------------------------------------------
+    // UPDATE
+    // -------------------------------------------------------
+
     override public function update(elapsed:Float):Void
     {
         if (!playing) return;
 
         _time = _channel.position;
 
+        // Safe proximity code
         if (_target != null)
         {
-            var targetPos = FlxPoint.get(_target.x, _target.y);
-            var d = targetPos.distanceTo(FlxPoint.get(x, y));
-            var mult = 1 - FlxMath.bound(d / _radius, 0, 1);
-            _volumeAdjust = mult;
+            if (Reflect.hasField(_target, "x") && Reflect.hasField(_target, "y"))
+            {
+                var dx = _target.x - x;
+                var dy = _target.y - y;
+                var dist = Math.sqrt(dx * dx + dy * dy);
+
+                _volumeAdjust = 1 - FlxMath.bound(dist / _radius, 0, 1);
+            }
         }
 
         updateTransform();
 
-        if (_transform.volume > 0)
-        {
-            amplitudeLeft = _channel.leftPeak / _transform.volume;
-            amplitudeRight = _channel.rightPeak / _transform.volume;
-            amplitude = (amplitudeLeft + amplitudeRight) / 2;
-        }
+        amplitudeLeft = _channel.leftPeak;
+        amplitudeRight = _channel.rightPeak;
+        amplitude = (amplitudeLeft + amplitudeRight) / 2;
 
         if (endTime != null && _time >= endTime)
             stopped();
     }
 
-    // -------------------------------
-    // Loading
-    // -------------------------------
+    // -------------------------------------------------------
+    // API
+    // -------------------------------------------------------
+
     public function loadEmbedded(Snd:Dynamic, Looped:Bool=false, AutoDestroy:Bool=false, ?OnComplete:Void->Void):FlxSound
     {
         cleanup(true);
@@ -149,15 +168,14 @@ class FlxSound extends FlxBasic
         return init(Looped, AutoDestroy, OnComplete);
     }
 
-    public function loadStream(URL:String, Looped:Bool=false, AutoDestroy:Bool=false, ?OnComplete:Void->Void, ?OnLoad:Void->Void):FlxSound
+    public function loadStream(URL:String, Looped:Bool=false, AutoDestroy:Bool=false, ?OnComplete:Void->Void):FlxSound
     {
         cleanup(true);
 
         _sound = new Sound();
         _sound.load(new openfl.net.URLRequest(URL));
 
-        var cb = (OnComplete != null ? OnComplete : OnLoad);
-        return init(Looped, AutoDestroy, cb);
+        return init(Looped, AutoDestroy, OnComplete);
     }
 
     function init(loop:Bool, auto:Bool, ?cb:Void->Void):FlxSound
@@ -175,10 +193,11 @@ class FlxSound extends FlxBasic
         return this;
     }
 
-    // -------------------------------
-    // Playback
-    // -------------------------------
-    public function play(ForceRestart:Bool=false, StartTime:Float=0, ?End:Int):FlxSound
+    // -------------------------------------------------------
+    // PLAYBACK
+    // -------------------------------------------------------
+
+    public function play(ForceRestart:Bool=false, Start:Float=0, ?End:Int):FlxSound
     {
         if (!exists) return this;
 
@@ -190,7 +209,7 @@ class FlxSound extends FlxBasic
         if (_paused)
             resume();
         else
-            startSound(StartTime);
+            startSound(Start);
 
         endTime = End;
         return this;
@@ -220,6 +239,10 @@ class FlxSound extends FlxBasic
         return this;
     }
 
+    // -------------------------------------------------------
+    // FADING
+    // -------------------------------------------------------
+
     public inline function fadeOut(dur:Float=1, To:Float=0, ?cb:FlxTween->Void)
     {
         if (fadeTween != null) fadeTween.cancel();
@@ -240,9 +263,10 @@ class FlxSound extends FlxBasic
 
     function volumeTween(v:Float):Void volume = v;
 
-    // -------------------------------
-    // Transform
-    // -------------------------------
+    // -------------------------------------------------------
+    // TRANSFORM
+    // -------------------------------------------------------
+
     @:allow(flixel.sound.FlxSoundGroup)
     @:allow(flixel.system.FlxSoundGroup)
     function updateTransform():Void
@@ -262,7 +286,7 @@ class FlxSound extends FlxBasic
         if (_sound == null) return;
 
         _paused = false;
-        _channel = _sound.play(start, looped ? 999999 : 0, _transform);
+        _channel = _sound.play(Std.int(start), looped ? 999999 : 0, _transform);
 
         if (_channel != null)
         {
@@ -276,7 +300,7 @@ class FlxSound extends FlxBasic
         }
     }
 
-    function stopped(?_):Void
+    function stopped(?e:Dynamic):Void
     {
         if (onComplete != null)
             onComplete();
@@ -314,10 +338,12 @@ class FlxSound extends FlxBasic
         }
     }
 
-    // -------------------------------
-    // Getters / Setters
-    // -------------------------------
-    inline function get_playing():Bool return _channel != null;
+    // -------------------------------------------------------
+    // GETTERS / SETTERS
+    // -------------------------------------------------------
+
+    public inline function get_playing():Bool return _channel != null;
+
     inline function get_volume():Float return _volume;
 
     function set_volume(v:Float):Float
@@ -358,7 +384,6 @@ class FlxSound extends FlxBasic
         if (this.group != g)
         {
             if (this.group != null) this.group.remove(this);
-
             this.group = g;
             if (g != null) g.add(this);
             updateTransform();
@@ -375,4 +400,11 @@ class FlxSound extends FlxBasic
             LabelValuePair.weak("volume", volume)
         ]);
     }
+
+    // -------------------------------------------------------
+    // REQUIRED BY SoundFrontEnd
+    // -------------------------------------------------------
+
+    public function onFocusLost():Void {}
+    public function onFocus():Void {}
 }

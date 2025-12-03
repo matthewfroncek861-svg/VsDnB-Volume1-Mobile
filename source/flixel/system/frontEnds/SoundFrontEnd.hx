@@ -8,6 +8,8 @@ import flixel.sound.FlxSound;
 import flixel.sound.FlxSoundGroup;
 import flixel.system.ui.FlxSoundTray;
 import openfl.media.Sound;
+
+// FIX: FlxSignal has no type params in Flixel 5
 import flixel.util.FlxSignal;
 
 /**
@@ -21,8 +23,10 @@ class SoundFrontEnd {
 	@:deprecated("Use onVolumeChange instead")
 	public var volumeHandler:Float->Void;
 
-	// FlxSignal instead of FlxTypedSignal
-	public var onVolumeChange(default, null):FlxSignal<Float->Void> = new FlxSignal<Float->Void>();
+	// FIXED:
+	// ✔ No generic parameters
+	// ✔ Modern FlxSignal
+	public var onVolumeChange(default, null):FlxSignal = new FlxSignal();
 
 	#if FLX_KEYBOARD
 	public var volumeUpKeys:Array<FlxKey> = [PLUS, NUMPADPLUS];
@@ -42,7 +46,7 @@ class SoundFrontEnd {
 	public var defaultMusicGroup:FlxSoundGroup = new FlxSoundGroup();
 	public var defaultSoundGroup:FlxSoundGroup = new FlxSoundGroup();
 
-	// Replace FlxTypedGroup<FlxSound> with simple array storage
+	// No FlxTypedGroup: Flixel 5 uses Array storage
 	public var list:Array<FlxSound> = [];
 
 	public var volume(default, set):Float = 1;
@@ -171,6 +175,7 @@ class SoundFrontEnd {
 		if (volumeHandler != null)
 			volumeHandler(muted ? 0 : volume);
 
+		// ✔ Fixed: no type params, dispatch takes dynamic arguments
 		onVolumeChange.dispatch(muted ? 0 : volume);
 
 		showSoundTray(true);
@@ -193,6 +198,7 @@ class SoundFrontEnd {
 		if (volumeHandler != null)
 			volumeHandler(muted ? 0 : volume);
 
+		// ✔ Fixed
 		onVolumeChange.dispatch(muted ? 0 : volume);
 
 		return volume;

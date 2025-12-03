@@ -88,7 +88,10 @@ class SongRegistry extends BaseRegistry<Song, SongMetadata>
     public function loadMetadataFile(id:String, ?variation:String):SongMetadata
     {
         var parser = new JsonParser<SongMetadata>();
-        parser.ignoreUnknownVariables = true;
+        
+        try {
+            Reflect.setField(parser, "ignoreUnknownVariables", true);
+        } catch (e) {}
         
         switch (readMetadataEntryFile(id, variation))
         {

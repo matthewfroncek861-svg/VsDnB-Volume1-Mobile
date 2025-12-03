@@ -236,7 +236,7 @@ class FlxSound extends FlxBasic
 		else if (Std.isOfType(Snd, String))
 			_sound = openfl.utils.Assets.getSound(Snd);
 
-		return init(Looped, AutoDestroy, OnComplete != null ? OnComplete : OnLoad);
+		return init(Looped, AutoDestroy, OnComplete != null);
 	}
 
 	public function loadStream(URL:String, Looped:Bool=false, AutoDestroy:Bool=false, ?OnComplete:Void->Void, ?OnLoad:Void->Void):FlxSound

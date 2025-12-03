@@ -29,7 +29,10 @@ class StageRegistry extends BaseRegistry<Stage, StageData>
     public function parseEntryData(id:String):StageData
     {
         var parser:JsonParser<StageData> = new JsonParser<StageData>();
-        parser.ignoreUnknownVariables = true;
+
+        try {
+            Reflect.setField(parser, "ignoreUnknownVariables", true);
+        } catch (e) {}
         
         switch (loadEntryFile(id))
         {

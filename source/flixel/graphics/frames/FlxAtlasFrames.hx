@@ -444,37 +444,54 @@ class FlxAtlasFrames extends FlxFramesCollection
 	 * @param   overwriteHash  If true, any new frames with matching names will replace old ones.
 	 * 
 	 * @since 5.3.0
-	 */
-	public function // REMOVED_ANIMATE // addAtlas(collection:FlxAtlasFrames, overwriteHash = false)
-	{
-		for (frame in collection.frames)
-			pushFrame(frame, overwriteHash);
-		
-		if (!usedGraphics.contains(collection.parent))
-		{
-			usedGraphics.push(collection.parent);
-			collection.parent.incrementUseCount();
-		}
-		
-		return this;
-	}
-	
-	/**
-	 * Creates a new `FlxAtlasFrames` instance with all the frames from this and the desired instance.
-	 * 
-	 * Note: Calling `destroy` on either of these graphics after concatenating them may cause crashes
-	 * @param   collection     The other frames to add.
-	 * @param   overwriteHash  If true, any new frames with matching names will replace old ones.
-	 * 
-	 * @since 5.3.0
-	 */
-	public function concat(collection:FlxAtlasFrames, overwriteHash = false)
-	{
-		final newCollection = new FlxAtlasFrames(parent);
-		newCollection.// REMOVED_ANIMATE // addAtlas(this);
-		newCollection.// REMOVED_ANIMATE // addAtlas(this, overwriteHash);
-		return this;
-	}
+	 */    /**
+     * Adds all of the frames from the specified collection
+     *
+     * @param   collection     The frames to add.
+     * @param   overwriteHash  If true, any new frames with matching names will replace old ones.
+     *
+     * @since 5.3.0
+     */
+    public function addAtlas(collection:FlxAtlasFrames, overwriteHash:Bool = false)
+    {
+        if (collection == null) return this;
+
+        for (frame in collection.frames)
+            pushFrame(frame, overwriteHash);
+
+        if (!usedGraphics.contains(collection.parent))
+        {
+            usedGraphics.push(collection.parent);
+            collection.parent.incrementUseCount();
+        }
+
+        return this;
+    }
+
+    /**
+     * Creates a new `FlxAtlasFrames` instance with all frames from this and another collection.
+     *
+     * Note: Calling `destroy()` on either graphic after concatenating them may cause crashes.
+     *
+     * @param   collection     The other frames to add.
+     * @param   overwriteHash  If true, new frames with matching names overwrite old ones.
+     *
+     * @since 5.3.0
+     */
+    public function concat(collection:FlxAtlasFrames, overwriteHash:Bool = false)
+    {
+        final newCollection = new FlxAtlasFrames(parent);
+
+        // first add this collection
+        newCollection.addAtlas(this, overwriteHash);
+
+        // then add the other one
+        if (collection != null)
+            newCollection.addAtlas(collection, overwriteHash);
+
+        return newCollection;
+    }
+
 }
 
 @:deprecated("Use TexturePackerAtlas instead")// 5.4.0

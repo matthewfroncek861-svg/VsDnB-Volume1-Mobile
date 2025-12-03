@@ -103,7 +103,7 @@ import lime.media.AudioSource;
     // -------------------------------------------------------
     @:noCompletion private function get_position():Float {
         #if lime
-        return __isValid ? __source.time : 0;
+        return __isValid ? this.position : 0;
         #else
         return 0;
         #end
@@ -111,7 +111,7 @@ import lime.media.AudioSource;
 
     @:noCompletion private function set_position(v:Float):Float {
         #if lime
-        if (__isValid) __source.time = v;
+        if (__isValid) this.position = v;
         #end
         return v;
     }

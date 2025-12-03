@@ -74,11 +74,10 @@ jobs:
                   continue
               for subdir, dirs, files in os.walk(root):
                   for f in files:
-                      if f.endswith((".h", ".hpp", ".cpp", ".mm")):
-                          try:
-                              with open(path, "r", encoding="utf-8") as file:
-                                  txt = file.read()
-                    new = txt
+                    if f.endswith((".h", ".hpp", ".cpp", ".mm")):
+                        try:
+                            with open(path, "r", encoding="utf-8") as file:
+                            txt = file.read()
                     for a, b in PATCHES.items():
                         new = re.sub(a, b, new)
                     if new != txt:

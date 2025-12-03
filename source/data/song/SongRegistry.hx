@@ -132,8 +132,11 @@ class SongRegistry extends BaseRegistry<Song, SongMetadata>
     public function loadChartDataFile(id:String, ?variation:String, ?suffix:String):SongChartData
     {
         var parser = new JsonParser<SongChartData>();
-        parser.ignoreUnknownVariables = true;
-        
+
+        try {
+            Reflect.setField(parser, "ignoreUnknownVariables", true);
+        } catch (e) {}
+                
         switch (readChartEntryFile(id, variation, suffix))
         {
             case {fileName: fileName, contents: contents}:
@@ -200,8 +203,11 @@ class SongRegistry extends BaseRegistry<Song, SongMetadata>
     public function loadMusicDataFile(id:String, ?variation:String):SongMusicData
     {
         var parser = new JsonParser<SongMusicData>();
-        parser.ignoreUnknownVariables = true;
-        
+
+        try {
+            Reflect.setField(parser, "ignoreUnknownVariables", true);
+        } catch (e) {}
+                
         switch (readMusicDataFile(id, variation))
         {
             case {fileName: fileName, contents: contents}:

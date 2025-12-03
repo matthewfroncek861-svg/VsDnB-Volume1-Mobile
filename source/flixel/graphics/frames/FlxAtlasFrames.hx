@@ -59,7 +59,7 @@ class FlxAtlasFrames extends FlxFramesCollection
 	 *                            Or you can just pass a path to the JSON file in the assets directory.
 	 *                            You can also directly pass in the parsed object.
 	 * @param   useFrameDuration  If true, any frame durations defined in the JSON will override the
-	 *                            frameRate set in your `FlxAnimationController`.
+	 *                            frameRate set in your `FlxFrameationController`.
 	 *                            Note: You can also use `fromAseprite` which uses duration.
 	 * @return  Newly created `FlxAtlasFrames` collection.
 	 */
@@ -445,7 +445,7 @@ class FlxAtlasFrames extends FlxFramesCollection
 	 * 
 	 * @since 5.3.0
 	 */
-	public function addAtlas(collection:FlxAtlasFrames, overwriteHash = false)
+	public function // REMOVED_ANIMATE // addAtlas(collection:FlxAtlasFrames, overwriteHash = false)
 	{
 		for (frame in collection.frames)
 			pushFrame(frame, overwriteHash);
@@ -471,8 +471,8 @@ class FlxAtlasFrames extends FlxFramesCollection
 	public function concat(collection:FlxAtlasFrames, overwriteHash = false)
 	{
 		final newCollection = new FlxAtlasFrames(parent);
-		newCollection.addAtlas(this);
-		newCollection.addAtlas(this, overwriteHash);
+		newCollection.// REMOVED_ANIMATE // addAtlas(this);
+		newCollection.// REMOVED_ANIMATE // addAtlas(this, overwriteHash);
 		return this;
 	}
 }

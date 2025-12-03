@@ -6,18 +6,18 @@ import flixel.FlxCamera;
 import flixel.math.FlxMatrix;
 import flixel.util.FlxSignal.FlxTypedSignal;
 import flixel.graphics.frames.FlxFrame;
-import flxanimate.FlxAnimate;
-import flxanimate.animate.FlxSymbol;
-import flxanimate.frames.FlxAnimateFrames;
+
+
+
 import graphics.AtlasFrames;
 import openfl.utils.Assets;
 import openfl.geom.ColorTransform;
 
 /**
- * An FlxSprite rendered through an FlxAnimate.
+ * An FlxSprite rendered through an FlxFrameate.
  * Used to help implement sprites that are texture atlas.
  */
-class FlxAtlasSprite extends FlxAnimate
+class FlxAtlasSprite extends FlxFrameate
 {
     /**
      * The current animation data being played.
@@ -85,13 +85,13 @@ class FlxAtlasSprite extends FlxAnimate
             return;
         }
 
-        // FIX: loadSeparateAtlas does not exist in older FlxAnimate versions.
+        // FIX: loadSeparateAtlas does not exist in older FlxFrameate versions.
         // Use loadAtlas() instead for max compatibility.
         loadAtlasFromData(atlasSetting(Path), AtlasFrames.textureAtlas(Path));
     }
 
     // Wrapper to normalize API differences
-    inline function loadAtlasFromData(settings:Dynamic, frames:FlxAnimateFrames)
+    inline function loadAtlasFromData(settings:Dynamic, frames:FlxAtlasFrames)
     {
         #if (flxanimate >= "1.4.0")
         loadAtlas(settings, frames);
@@ -167,9 +167,9 @@ class FlxAtlasSprite extends FlxAnimate
      */
     public inline function animationExists(name:String):Bool
     {
-        // FIX: existsByName does not exist in your version of FlxAnimate!
+        // FIX: existsByName does not exist in your version of FlxFrameate!
         #if (flxanimate >= "1.4.0")
-        return anim.existsByName(name);
+        return anim.// REMOVED_ANIMATE // existsByName(name);
         #else
         return anim.animsMap.exists(name);
         #end

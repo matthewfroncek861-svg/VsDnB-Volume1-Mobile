@@ -5,7 +5,7 @@ import flixel.FlxG;
 /**
  * Just a helper structure for the `FlxSprite` animation system.
  */
-class FlxAnimation extends FlxBaseAnimation
+class FlxFrameation extends FlxBaseAnimation
 {
 	/**
 	 * Animation frameRate - the speed in frames per second that the animation should play at.
@@ -76,7 +76,7 @@ class FlxAnimation extends FlxBaseAnimation
 	/**
 	 * How fast or slow time should pass for this animation.
 	 * 
-	 * Similar to `FlxAnimationController`'s `timeScale`, but won't effect other animations.
+	 * Similar to `FlxFrameationController`'s `timeScale`, but won't effect other animations.
 	 * @since 5.4.1
 	 */
 	public var timeScale:Float = 1.0;
@@ -94,7 +94,7 @@ class FlxAnimation extends FlxBaseAnimation
 	 * @param   flipX       Whether or not the frames of this animation are horizontally flipped.
 	 * @param   flipY       Whether or not the frames of this animation are vertically flipped.
 	 */
-	public function new(parent:FlxAnimationController, name:String, frames:Array<Int>, frameRate = 0.0, looped = true, flipX = false, flipY = false)
+	public function new(parent:FlxFrameationController, name:String, frames:Array<Int>, frameRate = 0.0, looped = true, flipX = false, flipY = false)
 	{
 		super(parent, name);
 
@@ -244,9 +244,9 @@ class FlxAnimation extends FlxBaseAnimation
 		return curframeDuration > 0 ? curframeDuration : frameDuration;
 	}
 
-	override public function clone(newParent:FlxAnimationController):FlxAnimation
+	override public function clone(newParent:FlxFrameationController):FlxFrameation
 	{
-		return new FlxAnimation(newParent, name, frames, frameRate, looped, flipX, flipY);
+		return new FlxFrameation(newParent, name, frames, frameRate, looped, flipX, flipY);
 	}
 
 	function set_frameRate(value:Float):Float

@@ -3,7 +3,7 @@ package play.notes;
 import data.song.SongData.SongNoteData;
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.animation.FlxAnimation;
+import flixel.animation.FlxFrameation;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFrame;
 import flixel.graphics.tile.FlxDrawTrianglesItem.DrawData;
@@ -185,13 +185,13 @@ class SustainNote extends FlxSprite
 	 * The current animation being played for the hold trail part of the sustain.
 	 * Helps to calculate the UV data for the current frame the animation is on, to then render onto the sprite.
 	 */
-	var holdAnimation(default, null):FlxAnimation;
+	var holdAnimation(default, null):FlxFrameation;
 
 	/**
 	 * The current animation being played for the 'end' part of the sustain.
 	 * Helps to calculate the UV data for the current frame the animation is on, to then render onto the sprite.
 	 */
-	var holdEndAnimation(default, null):FlxAnimation;
+	var holdEndAnimation(default, null):FlxFrameation;
 
 	/**
 	 * The current frame of the 'hold' animation.

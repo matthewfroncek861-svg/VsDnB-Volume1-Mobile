@@ -367,7 +367,7 @@ class Paths
 	}
 
 	/**
-	 * Retrieves the file path for an FlxAnimate atlas file.
+	 * Retrieves the file path for an FlxFrameate atlas file.
 	 * @param key The path the atlas is located in.
 	 * @param library The library the atlas is in.
 	 * @return The file location the atlas is at.

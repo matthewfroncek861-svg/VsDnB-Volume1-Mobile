@@ -26,7 +26,7 @@ import flixel.tweens.FlxTween;
 import flixel.ui.FlxBar;
 import flixel.ui.FlxButton.FlxTypedButton;
 import flixel.util.FlxTimer;
-import flixel.animation.FlxAnimationController;
+import flixel.animation.FlxFrameationController;
 #if FLX_TOUCH
 import flixel.input.touch.FlxTouch;
 #end
@@ -140,7 +140,7 @@ class Tracker extends Watch
 				"progress"
 			]));
 
-			addProfile(new TrackerProfile(FlxAnimationController, ["frameIndex", "frameName", "name", "paused", "finished", "frames"]));
+			addProfile(new TrackerProfile(FlxFrameationController, ["frameIndex", "frameName", "name", "paused", "finished", "frames"]));
 
 			addProfile(new TrackerProfile(FlxTypedEmitter, ["emitting", "frequency", "bounce"], [FlxTypedGroup, FlxRect]));
 

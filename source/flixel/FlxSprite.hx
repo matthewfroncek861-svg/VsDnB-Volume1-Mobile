@@ -1,7 +1,7 @@
 package flixel;
 
 import flixel.FlxBasic.IFlxBasic;
-import flixel.animation.FlxAnimationController;
+import flixel.animation.FlxFrameationController;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFrame;
 import flixel.graphics.frames.FlxFramesCollection;
@@ -139,7 +139,7 @@ class FlxSprite extends FlxObject
 	 * Class that handles adding and playing animations on this sprite.
 	 * @see https://snippets.haxeflixel.com/sprites/animation/
 	 */
-	public var animation:FlxAnimationController;
+	public var animation:FlxFrameationController;
 
 	// TODO: maybe convert this var to property...
 
@@ -390,7 +390,7 @@ class FlxSprite extends FlxObject
 	{
 		super.initVars();
 
-		animation = new FlxAnimationController(this);
+		animation = new FlxFrameationController(this);
 
 		_flashPoint = new Point();
 		_flashRect = new Rectangle();
@@ -1418,7 +1418,7 @@ class FlxSprite extends FlxObject
 	 * @param   saveAnimations   Whether to save animations in animation controller or not.
 	 * @return  This sprite with loaded frames
 	 */
-	@:access(flixel.animation.FlxAnimationController)
+	@:access(flixel.animation.FlxFrameationController)
 	public function setFrames(Frames:FlxFramesCollection, saveAnimations:Bool = true):FlxSprite
 	{
 		if (saveAnimations)

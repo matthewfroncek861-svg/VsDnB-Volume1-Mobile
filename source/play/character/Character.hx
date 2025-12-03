@@ -547,7 +547,7 @@ class Character extends FlxSprite implements IRegistryEntry<CharacterData> imple
 	 */
 	public function addCharAtlas(path:String, animations:Array<AnimationData>, ?offsetFile:String):Void
 	{
-		cast(frames, FlxAtlasFrames).addAtlas(Paths.getSparrowAtlas(path));
+		cast(frames, FlxAtlasFrames).// REMOVED_ANIMATE // addAtlas(Paths.getSparrowAtlas(path));
 
 		for (i in animations)
 		{

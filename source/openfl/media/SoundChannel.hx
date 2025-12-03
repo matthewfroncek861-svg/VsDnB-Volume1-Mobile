@@ -11,9 +11,17 @@ import lime.media.AudioSource;
 #end
 
 /**
-    Fully patched SoundChannel for Lime 8/9 compatibility.
-    Removes deprecated fields and uses only APIs that currently exist.
-**/
+ * Fully Lime-9-compatible SoundChannel implementation.
+ * Removes deprecated AudioSource fields:
+ *   time, pan, buffer, leftToRight, rightToLeft, etc.
+ *
+ * Uses only:
+ *   offset (seconds)
+ *   length (seconds)
+ *   gain
+ *   pitch
+ *   loops
+ */
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
@@ -34,21 +42,25 @@ import lime.media.AudioSource;
     public var pitch(get, set):Float;
     public var loops(get, set):Int;
 
-    @:noCompletion private var __sound:Sound;
-    @:noCompletion private var __isValid:Bool = false;
     @:noCompletion private var __soundTransform:SoundTransform;
-    @:noCompletion private var __leftPeak:Float = 0;
-    @:noCompletion private var __rightPeak:Float = 0;
 
     #if lime
     @:noCompletion private var __source:AudioSource;
     #end
 
+    @:noCompletion private var __isValid:Bool = false;
+    @:noCompletion private var __leftPeak:Float = 0;
+    @:noCompletion private var __rightPeak:Float = 0;
+
+    // manual loop timing
+    @:noCompletion private var __loopTime:Int = -1;
+
     // -------------------------------------------------------
     // Constructor
     // -------------------------------------------------------
     @:noCompletion private function new(src:#if lime AudioSource #else Dynamic #end,
-                                       transform:SoundTransform = null) {
+                                       transform:SoundTransform = null)
+    {
         super(this);
 
         __soundTransform = (transform != null) ? transform : new SoundTransform();
@@ -58,7 +70,7 @@ import lime.media.AudioSource;
     }
 
     // -------------------------------------------------------
-    // Stop
+    // STOP
     // -------------------------------------------------------
     public function stop():Void {
         SoundMixer.__unregisterSoundChannel(this);
@@ -85,7 +97,7 @@ import lime.media.AudioSource;
     }
 
     // -------------------------------------------------------
-    // Init
+    // INIT
     // -------------------------------------------------------
     @:noCompletion private function __initAudioSource(src:#if lime AudioSource #else Dynamic #end):Void {
         #if lime
@@ -98,31 +110,31 @@ import lime.media.AudioSource;
         #end
     }
 
-// ----------------------------------------
-// POSITION (Lime 9: use offset instead of time)
-// offset is in seconds, OpenFL position is milliseconds
-// ----------------------------------------
-@:noCompletion private function get_position():Float {
-    #if lime
-    if (!__isValid || __source == null) return 0;
-    return __source.offset * 1000.0; // convert seconds → ms
-    #else
-    return 0;
-    #end
-}
-
-@:noCompletion private function set_position(v:Float):Float {
-    #if lime
-    if (__isValid && __source != null) {
-        __source.offset = v / 1000.0; // ms → seconds
-        __source.play(); // restart playback from new position
+    // -------------------------------------------------------
+    // POSITION (uses offset instead of removed time field)
+    // offset = seconds, OpenFL uses ms
+    // -------------------------------------------------------
+    @:noCompletion private function get_position():Float {
+        #if lime
+        if (!__isValid || __source == null) return 0;
+        return __source.offset * 1000.0;
+        #else
+        return 0;
+        #end
     }
-    #end
-    return v;
-}
+
+    @:noCompletion private function set_position(v:Float):Float {
+        #if lime
+        if (__isValid && __source != null) {
+            __source.offset = v / 1000.0; // ms → seconds
+            __source.play(); // restart at new position
+        }
+        #end
+        return v;
+    }
 
     // -------------------------------------------------------
-    // Sound Transform
+    // SOUND TRANSFORM
     // -------------------------------------------------------
     @:noCompletion private function get_soundTransform():SoundTransform {
         return __soundTransform.clone();
@@ -145,7 +157,7 @@ import lime.media.AudioSource;
     }
 
     // -------------------------------------------------------
-    // Pitch
+    // PITCH
     // -------------------------------------------------------
     @:noCompletion private function get_pitch():Float {
         #if lime
@@ -163,11 +175,8 @@ import lime.media.AudioSource;
     }
 
     // -------------------------------------------------------
-    // Loop Time
-    // (Lime 9 does NOT have loopTime anymore – we store it manually)
+    // LOOP TIME (manual storage)
     // -------------------------------------------------------
-    @:noCompletion private var __loopTime:Int = -1;
-
     @:noCompletion private function get_loopTime():Int {
         return __loopTime;
     }
@@ -178,12 +187,12 @@ import lime.media.AudioSource;
     }
 
     // -------------------------------------------------------
-    // End Time
-    // (Lime 9 only has length:Int)
+    // END TIME (seconds → ms)
     // -------------------------------------------------------
     @:noCompletion private function get_endTime():Null<Int> {
         #if lime
-        return __isValid ? __source.length : null;
+        if (!__isValid || __source == null) return null;
+        return Std.int(__source.length * 1000);
         #else
         return null;
         #end
@@ -192,14 +201,14 @@ import lime.media.AudioSource;
     @:noCompletion private function set_endTime(v:Null<Int>):Null<Int> {
         #if lime
         if (__isValid && v != null) {
-            __source.length = v;
+            __source.length = v / 1000.0;
         }
         #end
         return v;
     }
 
     // -------------------------------------------------------
-    // Loops
+    // LOOPS
     // -------------------------------------------------------
     @:noCompletion private function get_loops():Int {
         #if lime
@@ -217,7 +226,7 @@ import lime.media.AudioSource;
     }
 
     // -------------------------------------------------------
-    // Peaks (simplified fallback)
+    // PEAKS (approx using gain)
     // -------------------------------------------------------
     @:noCompletion private function get_leftPeak():Float {
         #if lime
@@ -238,7 +247,7 @@ import lime.media.AudioSource;
     }
 
     // -------------------------------------------------------
-    // COMPLETE EVENT
+    // COMPLETE
     // -------------------------------------------------------
     @:noCompletion private function source_onComplete():Void {
         SoundMixer.__unregisterSoundChannel(this);

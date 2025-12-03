@@ -29,7 +29,10 @@ class DialogueRegistry extends BaseRegistry<Dialogue, DialogueData>
     public function parseEntryData(id:String):DialogueData
     {
         var parser:JsonParser<DialogueData> = new JsonParser<DialogueData>();
-        parser.ignoreUnknownVariables = true;
+
+        try {
+            Reflect.setField(parser, "ignoreUnknownVariables", true);
+        } catch (e) {}
 
         switch (loadEntryFile(id))
         {

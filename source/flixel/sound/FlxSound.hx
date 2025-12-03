@@ -337,17 +337,25 @@ class FlxSound extends FlxBasic
 	// TRANSFORM
 	// ----------------------------------------------------------
 
-	function updateTransform():Void
-	{
-		_transform.volume =
-			(FlxG.sound.muted ? 0 : 1) *
-			FlxG.sound.volume *
-			(group != null ? group.volume : 1) *
-			_volume * _volumeAdjust;
+// ----------------------------------------------------------
+// TRANSFORM
+// ----------------------------------------------------------
 
-		if (_channel != null)
-			_channel.soundTransform = _transform;
-	}
+// Allow FlxSoundGroup to call updateTransform()
+// Psych Engine uses BOTH namespaces depending on version
+@:allow(flixel.sound.FlxSoundGroup)
+@:allow(flixel.system.FlxSoundGroup)
+function updateTransform():Void
+{
+    _transform.volume =
+        (FlxG.sound.muted ? 0 : 1) *
+        FlxG.sound.volume *
+        (group != null ? group.volume : 1) *
+        _volume * _volumeAdjust;
+
+    if (_channel != null)
+        _channel.soundTransform = _transform;
+}
 
 	function startSound(start:Float):Void
 	{

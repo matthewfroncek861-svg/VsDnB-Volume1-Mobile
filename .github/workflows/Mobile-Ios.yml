@@ -37,7 +37,7 @@ jobs:
           haxelib install flixel 5.3.0
           haxelib install flixel-tools 1.5.1
           haxelib install flixel-ui 2.5.0
-          haxelib install flixel-addons 3.0.2
+          haxelib install flixel-addons 3.3.0
           haxelib install flxanimate
           haxelib install json2object
           haxelib git polymod https://github.com/PabloelproxD210/Polymod.git

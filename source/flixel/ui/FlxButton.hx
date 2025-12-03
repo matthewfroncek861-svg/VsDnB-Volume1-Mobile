@@ -18,7 +18,7 @@ import flixel.util.FlxDestroyUtil;
 import flixel.input.touch.FlxTouch;
 #end
 
-enum abstract FlxButtonState(Int) to Int
+enum abstract FlxButtonState(Int) from Int to Int
 {
 	/** The button is not highlighted or pressed */
 	var NORMAL = 0;

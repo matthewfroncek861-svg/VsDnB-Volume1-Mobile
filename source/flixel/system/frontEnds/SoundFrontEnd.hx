@@ -164,7 +164,7 @@ class SoundFrontEnd
 			sound.loadEmbedded(embeddedSound, looped, autoDestroy, onComplete);
 			loadHelper(sound, volume, group, autoPlay);
 			// Call OnlLoad() because the sound already loaded
-			if (onLoad != null && sound._sound != null)
+			if (onLoad != null)
 				onLoad();
 		}
 		else

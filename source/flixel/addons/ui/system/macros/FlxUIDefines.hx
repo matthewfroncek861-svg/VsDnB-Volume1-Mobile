@@ -4,6 +4,7 @@ package flixel.addons.ui.system.macros;
 import haxe.macro.Compiler;
 import haxe.macro.Context;
 import haxe.macro.Expr.Position;
+
 import flixel.system.macros.FlxDefines;
 
 // private enum UserAddonDefines {}

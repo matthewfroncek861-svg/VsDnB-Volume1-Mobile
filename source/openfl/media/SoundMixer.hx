@@ -43,4 +43,16 @@ final class SoundMixer {
 
 		return value;
 	}
+
+	// -----------------------------------------------------
+	// Compatibility: required by SoundMixer
+	// -----------------------------------------------------
+	@:noCompletion private function __updateTransform():Void {
+		#if lime
+		if (__valid && __source != null) {
+			// Combined volume = global * channel * local
+			__source.gain = SoundMixer.__soundTransform.volume * __soundTransform.volume;
+		}
+		#end
+	}
 }

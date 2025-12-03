@@ -5,264 +5,241 @@ import haxe.Int64;
 
 import openfl.events.Event;
 import openfl.events.EventDispatcher;
+
 #if lime
 import lime.media.AudioSource;
-import lime.media.openal.AL;
 #end
 
 /**
-	The SoundChannel class controls a sound in an application. Every sound is
-	assigned to a sound channel. This patched version is fully compatible with
-	Lime 7/8/9 and mobile backends, removing deprecated fields.
+    Fully patched SoundChannel for Lime 8/9 compatibility.
+    Removes deprecated fields and uses only APIs that currently exist.
 **/
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
 #end
-#if lime_cffi
-@:access(lime._internal.backend.native.NativeAudioSource)
-@:access(lime.media.AudioSource)
-#end
+
 @:access(openfl.media.Sound)
 @:access(openfl.media.SoundMixer)
 @:final @:keep class SoundChannel extends EventDispatcher {
 
-	public var leftPeak(get, null):Float;
-	public var rightPeak(get, null):Float;
-	public var position(get, set):Float;
-	public var soundTransform(get, set):SoundTransform;
+    public var leftPeak(get, null):Float;
+    public var rightPeak(get, null):Float;
 
-	public var loopTime(get, set):Int;
-	public var endTime(get, set):Null<Float>;
-	public var pitch(get, set):Float;
-	public var loops(get, set):Int;
+    public var position(get, set):Float;
+    public var soundTransform(get, set):SoundTransform;
 
-	@:noCompletion private var __sound:Sound;
-	@:noCompletion private var __isValid:Bool = false;
-	@:noCompletion private var __soundTransform:SoundTransform;
-	@:noCompletion private var __lastPeakTime:Float = 0;
-	@:noCompletion private var __leftPeak:Float = 0;
-	@:noCompletion private var __rightPeak:Float = 0;
+    public var loopTime(get, set):Int;
+    public var endTime(get, set):Null<Int>;
+    public var pitch(get, set):Float;
+    public var loops(get, set):Int;
 
-	#if lime
-	@:noCompletion private var __source:AudioSource;
-	@:noCompletion private var __audioSource(get, set):AudioSource;
-	#end
+    @:noCompletion private var __sound:Sound;
+    @:noCompletion private var __isValid:Bool = false;
+    @:noCompletion private var __soundTransform:SoundTransform;
+    @:noCompletion private var __leftPeak:Float = 0;
+    @:noCompletion private var __rightPeak:Float = 0;
 
+    #if lime
+    @:noCompletion private var __source:AudioSource;
+    #end
 
-	@:noCompletion private function new(source:#if lime AudioSource #else Dynamic #end = null, soundTransform:SoundTransform = null) {
-		super(this);
+    // -------------------------------------------------------
+    // Constructor
+    // -------------------------------------------------------
+    @:noCompletion private function new(src:#if lime AudioSource #else Dynamic #end,
+                                       transform:SoundTransform = null) {
+        super(this);
 
-		if (soundTransform != null) __soundTransform = soundTransform;
-		else __soundTransform = new SoundTransform();
+        __soundTransform = (transform != null) ? transform : new SoundTransform();
 
-		__initAudioSource(source);
+        __initAudioSource(src);
+        SoundMixer.__registerSoundChannel(this);
+    }
 
-		SoundMixer.__registerSoundChannel(this);
-	}
+    // -------------------------------------------------------
+    // Stop
+    // -------------------------------------------------------
+    public function stop():Void {
+        SoundMixer.__unregisterSoundChannel(this);
 
-	public function stop():Void {
-		SoundMixer.__unregisterSoundChannel(this);
+        if (!__isValid) return;
 
-		if (!__isValid) return;
+        #if lime
+        __source.stop();
+        #end
 
-		#if lime
-		__source.stop();
-		#end
+        __dispose();
+    }
 
-		__dispose();
-	}
+    @:noCompletion private function __dispose():Void {
+        if (!__isValid) return;
 
-	@:noCompletion private function __dispose():Void {
-		if (!__isValid) return;
+        #if lime
+        __source.onComplete.remove(source_onComplete);
+        __source.dispose();
+        __source = null;
+        #end
 
-		#if lime
-		__source.onComplete.remove(source_onComplete);
-		__source.dispose();
-		__source = null;
-		#end
+        __isValid = false;
+    }
 
-		__isValid = false;
-	}
+    // -------------------------------------------------------
+    // Init
+    // -------------------------------------------------------
+    @:noCompletion private function __initAudioSource(src:#if lime AudioSource #else Dynamic #end):Void {
+        #if lime
+        __source = src;
+        if (__source == null) return;
 
-	@:noCompletion private function __updatePeaks(time:Float):Bool {
-		if (!__isValid) return false;
+        __isValid = true;
+        __source.onComplete.add(source_onComplete);
+        __source.play();
+        #end
+    }
 
-		// Fallback peak detection (Lime 7/8/9)
-		#if lime
-		__leftPeak = __source.gain;
-		__rightPeak = __source.gain;
-		#else
-		__leftPeak = 0;
-		__rightPeak = 0;
-		#end
+    // -------------------------------------------------------
+    // Position (Lime 9 uses floats)
+    // -------------------------------------------------------
+    @:noCompletion private function get_position():Float {
+        #if lime
+        return __isValid ? __source.time : 0;
+        #else
+        return 0;
+        #end
+    }
 
-		return true;
-	}
+    @:noCompletion private function set_position(v:Float):Float {
+        #if lime
+        if (__isValid) __source.time = v;
+        #end
+        return v;
+    }
 
-	@:noCompletion private function __initAudioSource(source:#if lime AudioSource #else Dynamic #end):Void {
-		#if lime
-		__source = source;
+    // -------------------------------------------------------
+    // Sound Transform
+    // -------------------------------------------------------
+    @:noCompletion private function get_soundTransform():SoundTransform {
+        return __soundTransform.clone();
+    }
 
-		if (__source == null)
-			return;
+    @:noCompletion private function set_soundTransform(v:SoundTransform):SoundTransform {
+        if (v != null) {
+            __soundTransform.pan = v.pan;
+            __soundTransform.volume = v.volume;
 
-		__source.onComplete.add(source_onComplete);
-		__isValid = true;
-		__source.play();
-		#end
-	}
+            var finalVolume = SoundMixer.__soundTransform.volume * __soundTransform.volume;
 
-	// ------------------ Position ------------------
+            #if lime
+            if (__isValid) {
+                __source.gain = finalVolume;
+            }
+            #end
+        }
+        return v;
+    }
 
-	@:noCompletion private function get_position():Float {
-		if (!__isValid) return 0;
+    // -------------------------------------------------------
+    // Pitch
+    // -------------------------------------------------------
+    @:noCompletion private function get_pitch():Float {
+        #if lime
+        return __isValid ? __source.pitch : 1;
+        #else
+        return 1;
+        #end
+    }
 
-		#if lime
-		return __source.currentTime + __source.offset;
-		#else
-		return 0;
-		#end
-	}
+    @:noCompletion private function set_pitch(v:Float):Float {
+        #if lime
+        if (__isValid) __source.pitch = v;
+        #end
+        return v;
+    }
 
-	@:noCompletion private function set_position(value:Float):Float {
-		if (!__isValid) return 0;
+    // -------------------------------------------------------
+    // Loop Time
+    // (Lime 9 does NOT have loopTime anymore – we store it manually)
+    // -------------------------------------------------------
+    @:noCompletion private var __loopTime:Int = -1;
 
-		#if lime
-		__source.currentTime = value - __source.offset;
-		#end
+    @:noCompletion private function get_loopTime():Int {
+        return __loopTime;
+    }
 
-		return value;
-	}
+    @:noCompletion private function set_loopTime(v:Int):Int {
+        __loopTime = v;
+        return v;
+    }
 
-	// ------------------ SoundTransform ------------------
+    // -------------------------------------------------------
+    // End Time
+    // (Lime 9 only has length:Int)
+    // -------------------------------------------------------
+    @:noCompletion private function get_endTime():Null<Int> {
+        #if lime
+        return __isValid ? __source.length : null;
+        #else
+        return null;
+        #end
+    }
 
-	@:noCompletion private function get_soundTransform():SoundTransform {
-		return __soundTransform.clone();
-	}
+    @:noCompletion private function set_endTime(v:Null<Int>):Null<Int> {
+        #if lime
+        if (__isValid && v != null) {
+            __source.length = v;
+        }
+        #end
+        return v;
+    }
 
-	@:noCompletion private function set_soundTransform(value:SoundTransform):SoundTransform {
-		if (value != null) {
-			__soundTransform.pan = value.pan;
-			__soundTransform.volume = value.volume;
+    // -------------------------------------------------------
+    // Loops
+    // -------------------------------------------------------
+    @:noCompletion private function get_loops():Int {
+        #if lime
+        return __isValid ? __source.loops : 0;
+        #else
+        return 0;
+        #end
+    }
 
-			var pan = SoundMixer.__soundTransform.pan + __soundTransform.pan;
-			if (pan < -1) pan = -1;
-			if (pan > 1) pan = 1;
+    @:noCompletion private function set_loops(v:Int):Int {
+        #if lime
+        if (__isValid) __source.loops = v;
+        #end
+        return v;
+    }
 
-			var volume = SoundMixer.__soundTransform.volume * __soundTransform.volume;
+    // -------------------------------------------------------
+    // Peaks (simplified fallback)
+    // -------------------------------------------------------
+    @:noCompletion private function get_leftPeak():Float {
+        #if lime
+        __leftPeak = __source.gain;
+        return __leftPeak * __soundTransform.volume;
+        #else
+        return 0;
+        #end
+    }
 
-			#if lime
-			if (__isValid) {
-				// Lime does *not* have .pan anymore. Use a safe fallback.
-				__source.gain = volume;
-				// No pan support available in Lime 8/9. Ignored safely.
-			}
-			#end
-		}
+    @:noCompletion private function get_rightPeak():Float {
+        #if lime
+        __rightPeak = __source.gain;
+        return __rightPeak * __soundTransform.volume;
+        #else
+        return 0;
+        #end
+    }
 
-		return value;
-	}
-
-	// ------------------ Pitch ------------------
-
-	@:noCompletion private function get_pitch():Float {
-		if (!__isValid) return 1;
-
-		#if lime
-		return __source.pitch;
-		#else
-		return 1;
-		#end
-	}
-
-	@:noCompletion private function set_pitch(value:Float):Float {
-		if (!__isValid) return value;
-
-		#if lime
-		__source.pitch = value;
-		#end
-
-		return value;
-	}
-
-	// ------------------ Loop Time ------------------
-
-	@:noCompletion private function get_loopTime():Int {
-		#if lime
-		return __isValid ? __source.loopTime : -1;
-		#else
-		return -1;
-		#end
-	}
-
-	@:noCompletion private function set_loopTime(value:Int):Int {
-		#if lime
-		if (__isValid) __source.loopTime = value;
-		#end
-		return value;
-	}
-
-	// ------------------ End Time ------------------
-
-	@:noCompletion private function get_endTime():Null<Float> {
-		#if lime
-		return __isValid ? __source.length : null;
-		#else
-		return null;
-		#end
-	}
-
-	@:noCompletion private function set_endTime(value:Null<Float>):Null<Float> {
-		#if lime
-		if (__isValid) __source.length = value;
-		#end
-
-		return value;
-	}
-
-	// ------------------ Loops ------------------
-
-	@:noCompletion private function get_loops():Int {
-		#if lime
-		return __isValid ? __source.loops : 0;
-		#else
-		return 0;
-		#end
-	}
-
-	@:noCompletion private function set_loops(value:Int):Int {
-		#if lime
-		if (__isValid) __source.loops = value;
-		#end
-
-		return value;
-	}
-
-	// ------------------ Peaks ------------------
-
-	@:noCompletion private function get_leftPeak():Float {
-		__updatePeaks(get_position());
-		return __leftPeak * (__soundTransform == null ? 1 : __soundTransform.volume);
-	}
-
-	@:noCompletion private function get_rightPeak():Float {
-		__updatePeaks(get_position());
-		return __rightPeak * (__soundTransform == null ? 1 : __soundTransform.volume);
-	}
-
-	// ------------------ Events ------------------
-
-	@:noCompletion private function source_onComplete():Void {
-		SoundMixer.__unregisterSoundChannel(this);
-		__dispose();
-		dispatchEvent(new Event(Event.SOUND_COMPLETE));
-	}
-
-	#if lime
-	@:noCompletion private function get___audioSource():AudioSource return __source;
-	@:noCompletion private function set___audioSource(src:AudioSource):AudioSource return __source = src;
-	#end
+    // -------------------------------------------------------
+    // COMPLETE EVENT
+    // -------------------------------------------------------
+    @:noCompletion private function source_onComplete():Void {
+        SoundMixer.__unregisterSoundChannel(this);
+        __dispose();
+        dispatchEvent(new Event(Event.SOUND_COMPLETE));
+    }
 }
 #else
 typedef SoundChannel = flash.media.SoundChannel;

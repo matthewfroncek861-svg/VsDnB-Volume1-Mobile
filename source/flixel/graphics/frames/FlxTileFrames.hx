@@ -217,7 +217,7 @@ class FlxTileFrames extends FlxFramesCollection
 	/**
 	 * Creates new a `FlxTileFrames` collection from atlas frames which begin with
 	 * a common name (e.g. `"tiles-"`) and differ in indices (e.g. `"001"`, `"002"`, etc.).
-	 * This method is similar to `FlxFrameationController`'s `addByPrefix()`.
+	 * This method is similar to `FlxAnimationController`'s `addByPrefix()`.
 	 *
 	 * @param    Frames   Collection of atlas frames to generate tiles from.
 	 * @param    Prefix   Common beginning of image names in atlas (e.g. `"tiles-"`).

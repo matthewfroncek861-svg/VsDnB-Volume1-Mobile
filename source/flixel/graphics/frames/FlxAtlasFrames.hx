@@ -59,7 +59,7 @@ class FlxAtlasFrames extends FlxFramesCollection
 	 *                            Or you can just pass a path to the JSON file in the assets directory.
 	 *                            You can also directly pass in the parsed object.
 	 * @param   useFrameDuration  If true, any frame durations defined in the JSON will override the
-	 *                            frameRate set in your `FlxFrameationController`.
+	 *                            frameRate set in your `FlxAnimationController`.
 	 *                            Note: You can also use `fromAseprite` which uses duration.
 	 * @return  Newly created `FlxAtlasFrames` collection.
 	 */

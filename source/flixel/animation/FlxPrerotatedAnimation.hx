@@ -11,7 +11,7 @@ class FlxPrerotatedAnimation extends FlxBaseAnimation
 
 	var baked:Float;
 
-	public function new(Parent:FlxFrameationController, Baked:Float)
+	public function new(Parent:FlxAnimationController, Baked:Float)
 	{
 		super(Parent, PREROTATED);
 		baked = Baked;
@@ -55,7 +55,7 @@ class FlxPrerotatedAnimation extends FlxBaseAnimation
 		return Value;
 	}
 
-	override public function clone(Parent:FlxFrameationController):FlxPrerotatedAnimation
+	override public function clone(Parent:FlxAnimationController):FlxPrerotatedAnimation
 	{
 		return new FlxPrerotatedAnimation(Parent, baked);
 	}

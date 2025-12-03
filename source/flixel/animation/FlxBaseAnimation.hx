@@ -10,7 +10,7 @@ class FlxBaseAnimation implements IFlxDestroyable
 	/**
 	 * Animation controller this animation belongs to
 	 */
-	public var parent(default, null):FlxFrameationController;
+	public var parent(default, null):FlxAnimationController;
 
 	/**
 	 * String name of the animation (e.g. `"walk"`)
@@ -34,7 +34,7 @@ class FlxBaseAnimation implements IFlxDestroyable
 		return Value;
 	}
 
-	public function new(Parent:FlxFrameationController, Name:String)
+	public function new(Parent:FlxAnimationController, Name:String)
 	{
 		parent = Parent;
 		name = Name;
@@ -48,7 +48,7 @@ class FlxBaseAnimation implements IFlxDestroyable
 
 	public function update(elapsed:Float):Void {}
 
-	public function clone(Parent:FlxFrameationController):FlxBaseAnimation
+	public function clone(Parent:FlxAnimationController):FlxBaseAnimation
 	{
 		return null;
 	}

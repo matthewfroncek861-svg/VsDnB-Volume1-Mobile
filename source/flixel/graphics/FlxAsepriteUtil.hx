@@ -1,7 +1,7 @@
 package flixel.graphics;
 
 import flixel.graphics.atlas.AseAtlas;
-import flixel.animation.FlxFrameationController;
+import flixel.animation.FlxAnimationController;
 import flixel.math.FlxMath;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.system.FlxAssets;
@@ -89,10 +89,10 @@ class FlxAsepriteUtil
 		return sprite;
 	}
 	
-	// TODO: overload addAseAtlasTagsByPrefix to take FlxFrameationController?
+	// TODO: overload addAseAtlasTagsByPrefix to take FlxAnimationController?
 	// This might mess with codeclimate
 	
-	static function addByPrefixHelper(animations:FlxFrameationController, data:FlxAsepriteJsonAsset, tagSuffix = ":", excludeTags:Null<Array<String>>)
+	static function addByPrefixHelper(animations:FlxAnimationController, data:FlxAsepriteJsonAsset, tagSuffix = ":", excludeTags:Null<Array<String>>)
 	{
 		final aseData = data.getData();
 		for (tag in aseData.meta.frameTags)
@@ -164,10 +164,10 @@ class FlxAsepriteUtil
 		return sprite;
 	}
 	
-	// TODO: overload addAseAtlasTagsByIndex to take FlxFrameationController?
+	// TODO: overload addAseAtlasTagsByIndex to take FlxAnimationController?
 	// This might mess with codeclimate
 	
-	static function addByIndexHelper(animations:FlxFrameationController, data:FlxAsepriteJsonAsset, excludeTags:Null<Array<String>>)
+	static function addByIndexHelper(animations:FlxAnimationController, data:FlxAsepriteJsonAsset, excludeTags:Null<Array<String>>)
 	{
 		final aseData = data.getData();
 		final maxFrameNumber = animations.numFrames - 1;

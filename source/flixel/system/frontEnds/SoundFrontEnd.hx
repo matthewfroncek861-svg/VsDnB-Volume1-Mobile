@@ -2,204 +2,206 @@ package flixel.system.frontEnds;
 
 #if FLX_SOUND_SYSTEM
 import flixel.FlxG;
-import flixel.group.FlxTypedGroup;
 import flixel.input.keyboard.FlxKey;
 import flixel.math.FlxMath;
 import flixel.sound.FlxSound;
 import flixel.sound.FlxSoundGroup;
-import flixel.system.FlxAssets;
 import flixel.system.ui.FlxSoundTray;
-import flixel.text.FlxInputText;
-import flixel.util.FlxTypedSignal;
 import openfl.media.Sound;
+
+// FIX: FlxSignal has no type params in Flixel 5
+import flixel.util.FlxSignal;
 
 /**
  * Accessed via FlxG.sound
  */
 @:allow(flixel.FlxG)
-class SoundFrontEnd
-{
-    public var music:FlxSound;
-    public var muted:Bool = false;
+class SoundFrontEnd {
+	public var music:FlxSound;
+	public var muted:Bool = false;
 
-    @:deprecated("Use onVolumeChange instead")
-    public var volumeHandler:Float->Void;
+	@:deprecated("Use onVolumeChange instead")
+	public var volumeHandler:Float->Void;
 
-    public var onVolumeChange(default, null):FlxTypedSignal<Float->Void> =
-        new FlxTypedSignal<Float->Void>();
+	// FIXED:
+	// ✔ No generic parameters
+	// ✔ Modern FlxSignal
+	public var onVolumeChange(default, null):FlxSignal = new FlxSignal();
 
-    #if FLX_KEYBOARD
-    public var volumeUpKeys:Array<FlxKey> = [PLUS, NUMPADPLUS];
-    public var volumeDownKeys:Array<FlxKey> = [MINUS, NUMPADMINUS];
-    public var muteKeys:Array<FlxKey> = [ZERO, NUMPADZERO];
-    #end
+	#if FLX_KEYBOARD
+	public var volumeUpKeys:Array<FlxKey> = [PLUS, NUMPADPLUS];
+	public var volumeDownKeys:Array<FlxKey> = [MINUS, NUMPADMINUS];
+	public var muteKeys:Array<FlxKey> = [ZERO, NUMPADZERO];
+	#end
 
-    public var soundTrayEnabled:Bool = true;
+	public var soundTrayEnabled:Bool = true;
 
-    #if FLX_SOUND_TRAY
-    public var soundTray(get, never):FlxSoundTray;
-    inline function get_soundTray() return FlxG.game.soundTray;
-    #end
+	#if FLX_SOUND_TRAY
+	public var soundTray(get, never):FlxSoundTray;
 
-    public var defaultMusicGroup:FlxSoundGroup = new FlxSoundGroup();
-    public var defaultSoundGroup:FlxSoundGroup = new FlxSoundGroup();
+	inline function get_soundTray()
+		return FlxG.game.soundTray;
+	#end
 
-    public var list(default, null):FlxTypedGroup<FlxSound> =
-        new FlxTypedGroup<FlxSound>();
+	public var defaultMusicGroup:FlxSoundGroup = new FlxSoundGroup();
+	public var defaultSoundGroup:FlxSoundGroup = new FlxSoundGroup();
 
-    public var volume(default, set):Float = 1;
+	// No FlxTypedGroup: Flixel 5 uses Array storage
+	public var list:Array<FlxSound> = [];
 
-    // -------------------------------------------------------
-    // MUSIC
-    // -------------------------------------------------------
+	public var volume(default, set):Float = 1;
 
-    public function playMusic(asset:Dynamic, vol:Float = 1, loop = true, ?group:FlxSoundGroup):Void
-    {
-        if (group == null) group = defaultMusicGroup;
+	// -------------------------------------------------------
+	// MUSIC
+	// -------------------------------------------------------
 
-        if (music == null)
-            music = new FlxSound();
-        else if (music.playing)
-            music.stop();
+	public function playMusic(asset:Dynamic, vol:Float = 1, loop = true, ?group:FlxSoundGroup):Void {
+		if (group == null)
+			group = defaultMusicGroup;
 
-        music.loadEmbedded(asset, loop);
-        music.volume = vol;
-        music.persist = true;
-        group.add(music);
-        music.play();
-    }
+		if (music == null)
+			music = new FlxSound();
+		else if (music.playing)
+			music.stop();
 
-    // -------------------------------------------------------
-    // SOUND PLAYBACK
-    // -------------------------------------------------------
+		music.loadEmbedded(asset, loop);
+		music.volume = vol;
+		music.persist = true;
+		group.add(music);
+		music.play();
+	}
 
-    public function load(?asset:Dynamic, vol:Float = 1, loop = false, ?group:FlxSoundGroup,
-        autoDestroy = false, autoPlay = false, ?url:String,
-        ?onComplete:Void->Void, ?onLoad:Void->Void):FlxSound
-    {
-        var s:FlxSound = list.recycle(FlxSound);
+	// -------------------------------------------------------
+	// SOUND PLAYBACK
+	// -------------------------------------------------------
 
-        if (asset != null)
-        {
-            s.loadEmbedded(asset, loop, autoDestroy, onComplete);
-            loadHelper(s, vol, group, autoPlay);
-            if (onLoad != null) onLoad();
-        }
-        else if (url != null)
-        {
-            s.loadStream(url, loop, autoDestroy, onComplete);
-            loadHelper(s, vol, group);
-        }
+	public function load(?asset:Dynamic, vol:Float = 1, loop = false, ?group:FlxSoundGroup, autoDestroy = false, autoPlay = false, ?url:String,
+			?onComplete:Void->Void, ?onLoad:Void->Void):FlxSound {
+		var s:FlxSound = new FlxSound();
+		list.push(s);
 
-        return s;
-    }
+		if (asset != null) {
+			s.loadEmbedded(asset, loop, autoDestroy, onComplete);
+			loadHelper(s, vol, group, autoPlay);
+			if (onLoad != null)
+				onLoad();
+		} else if (url != null) {
+			s.loadStream(url, loop, autoDestroy, onComplete);
+			loadHelper(s, vol, group);
+		}
 
-    function loadHelper(s:FlxSound, vol:Float, group:FlxSoundGroup, autoPlay = false):FlxSound
-    {
-        if (group == null) group = defaultSoundGroup;
+		return s;
+	}
 
-        s.volume = vol;
-        group.add(s);
+	function loadHelper(s:FlxSound, vol:Float, group:FlxSoundGroup, autoPlay = false):FlxSound {
+		if (group == null)
+			group = defaultSoundGroup;
 
-        if (autoPlay) s.play();
-        return s;
-    }
+		s.volume = vol;
+		group.add(s);
 
-    public inline function play(asset:Dynamic, vol = 1.0, loop = false,
-        ?group:FlxSoundGroup, autoDestroy = true, ?onComplete:Void->Void):FlxSound
-    {
-        var s = list.recycle(FlxSound).loadEmbedded(asset, loop, autoDestroy, onComplete);
-        return loadHelper(s, vol, group, true);
-    }
+		if (autoPlay)
+			s.play();
+		return s;
+	}
 
-    // -------------------------------------------------------
-    // PAUSE / RESUME
-    // -------------------------------------------------------
+	public inline function play(asset:Dynamic, vol = 1.0, loop = false, ?group:FlxSoundGroup, autoDestroy = true, ?onComplete:Void->Void):FlxSound {
+		var s = new FlxSound();
+		list.push(s);
 
-    public function pause():Void
-    {
-        if (music != null && music.playing) music.pause();
+		s.loadEmbedded(asset, loop, autoDestroy, onComplete);
+		return loadHelper(s, vol, group, true);
+	}
 
-        for (s in list.members)
-            if (s != null && s.playing)
-                s.pause();
-    }
+	// -------------------------------------------------------
+	// PAUSE / RESUME
+	// -------------------------------------------------------
 
-    public function resume():Void
-    {
-        if (music != null) music.resume();
+	public function pause():Void {
+		if (music != null && music.playing)
+			music.pause();
 
-        for (s in list.members)
-            if (s != null)
-                s.resume();
-    }
+		for (s in list)
+			if (s != null && s.playing)
+				s.pause();
+	}
 
-    // -------------------------------------------------------
-    // FOCUS EVENTS
-    // -------------------------------------------------------
+	public function resume():Void {
+		if (music != null)
+			music.resume();
 
-    @:allow(flixel.FlxGame)
-    function onFocusLost():Void
-    {
-        if (music != null) music.onFocusLost();
+		for (s in list)
+			if (s != null)
+				s.resume();
+	}
 
-        for (s in list.members)
-            if (s != null) s.onFocusLost();
-    }
+	// -------------------------------------------------------
+	// FOCUS EVENTS
+	// -------------------------------------------------------
 
-    @:allow(flixel.FlxGame)
-    function onFocus():Void
-    {
-        if (music != null) music.onFocus();
+	@:allow(flixel.FlxGame)
+	function onFocusLost():Void {
+		if (music != null)
+			music.onFocusLost();
 
-        for (s in list.members)
-            if (s != null) s.onFocus();
-    }
+		for (s in list)
+			if (s != null)
+				s.onFocusLost();
+	}
 
-    // -------------------------------------------------------
-    // VOLUME
-    // -------------------------------------------------------
+	@:allow(flixel.FlxGame)
+	function onFocus():Void {
+		if (music != null)
+			music.onFocus();
 
-    public function changeVolume(a:Float):Void
-    {
-        muted = false;
-        volume += a;
-        showSoundTray(a > 0);
-    }
+		for (s in list)
+			if (s != null)
+				s.onFocus();
+	}
 
-    public function toggleMuted():Void
-    {
-        muted = !muted;
+	// -------------------------------------------------------
+	// VOLUME
+	// -------------------------------------------------------
 
-        if (volumeHandler != null)
-            volumeHandler(muted ? 0 : volume);
+	public function changeVolume(a:Float):Void {
+		muted = false;
+		volume += a;
+		showSoundTray(a > 0);
+	}
 
-        onVolumeChange.dispatch(muted ? 0 : volume);
+	public function toggleMuted():Void {
+		muted = !muted;
 
-        showSoundTray(true);
-    }
+		if (volumeHandler != null)
+			volumeHandler(muted ? 0 : volume);
 
-    public function showSoundTray(up:Bool = false):Void
-    {
-        #if FLX_SOUND_TRAY
-        if (soundTrayEnabled && FlxG.game.soundTray != null)
-        {
-            if (up) soundTray.showIncrement();
-            else soundTray.showDecrement();
-        }
-        #end
-    }
+		// ✔ Fixed: no type params, dispatch takes dynamic arguments
+		onVolumeChange.dispatch(muted ? 0 : volume);
 
-    function set_volume(v:Float):Float
-    {
-        volume = FlxMath.bound(v, 0, 1);
+		showSoundTray(true);
+	}
 
-        if (volumeHandler != null)
-            volumeHandler(muted ? 0 : volume);
+	public function showSoundTray(up:Bool = false):Void {
+		#if FLX_SOUND_TRAY
+		if (soundTrayEnabled && FlxG.game.soundTray != null) {
+			if (up)
+				soundTray.showIncrement();
+			else
+				soundTray.showDecrement();
+		}
+		#end
+	}
 
-        onVolumeChange.dispatch(muted ? 0 : volume);
+	function set_volume(v:Float):Float {
+		volume = FlxMath.bound(v, 0, 1);
 
-        return volume;
-    }
+		if (volumeHandler != null)
+			volumeHandler(muted ? 0 : volume);
+
+		// ✔ Fixed
+		onVolumeChange.dispatch(muted ? 0 : volume);
+
+		return volume;
+	}
 }
 #end

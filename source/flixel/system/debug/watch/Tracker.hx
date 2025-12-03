@@ -11,6 +11,7 @@ import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.FlxState;
+import flixel.animation.FlxAnimationController;
 import flixel.effects.particles.FlxEmitter.FlxTypedEmitter;
 import flixel.group.FlxSpriteGroup;
 import flixel.group.FlxGroup.FlxTypedGroup;
@@ -26,41 +27,27 @@ import flixel.tweens.FlxTween;
 import flixel.ui.FlxBar;
 import flixel.ui.FlxButton.FlxTypedButton;
 import flixel.util.FlxTimer;
-import flixel.animation.FlxFrameationController;
 #if FLX_TOUCH
 import flixel.input.touch.FlxTouch;
 #end
 #end
 import flixel.util.FlxStringUtil;
 
-class Tracker extends Watch
-{
+class Tracker extends Watch {
 	#if FLX_DEBUG
-	/**
-	 * Order matters here, as the last profile is the most relevant - i.e., if the
-	 * FlxSprite profile were added before the one for FlxObject, it would never be selected.
-	 */
 	public static var profiles:Array<TrackerProfile>;
-
-	/**
-	 * Stores a reference to all objects for a which a tracker window exists
-	 * to prevent the creation of two windows for the same object.
-	 */
 	public static var objectsBeingTracked:Array<Dynamic> = [];
 
 	static var _numTrackerWindows:Int = 0;
 
-	public static inline function addProfile(Profile:TrackerProfile):Void
-	{
-		if (Profile != null)
-		{
+	public static inline function addProfile(Profile:TrackerProfile):Void {
+		if (Profile != null) {
 			initProfiles();
 			profiles.push(Profile);
 		}
 	}
 
-	public static function findProfile(Object:Dynamic):TrackerProfile
-	{
+	public static function findProfile(Object:Dynamic):TrackerProfile {
 		initProfiles();
 
 		var lastMatchingProfile:TrackerProfile = null;
@@ -71,15 +58,12 @@ class Tracker extends Watch
 		return lastMatchingProfile;
 	}
 
-	public static function onStateSwitch():Void
-	{
+	public static function onStateSwitch():Void {
 		_numTrackerWindows = 0;
 	}
 
-	static function initProfiles():Void
-	{
-		if (profiles == null)
-		{
+	static function initProfiles():Void {
+		if (profiles == null) {
 			profiles = [];
 
 			addProfile(new TrackerProfile(FlxG, [
@@ -124,7 +108,8 @@ class Tracker extends Watch
 			], [FlxBasic, FlxRect]));
 
 			addProfile(new TrackerProfile(FlxTween, [
-				"active", "duration", "type", "percent", "finished", "scale", "backward", "executions", "startDelay", "loopDelay"
+				"active", "duration",       "type",    "percent", "finished",
+				 "scale", "backward", "executions", "startDelay", "loopDelay"
 			]));
 
 			addProfile(new TrackerProfile(FlxPath, ["speed", "angle", "autoCenter", "nodeIndex", "active", "finished"]));
@@ -140,11 +125,11 @@ class Tracker extends Watch
 				"progress"
 			]));
 
-			addProfile(new TrackerProfile(FlxFrameationController, ["frameIndex", "frameName", "name", "paused", "finished", "frames"]));
+			// FIXED: Correct animation controller name
+			addProfile(new TrackerProfile(FlxAnimationController, ["frameIndex", "frameName", "name", "paused", "finished", "frames"]));
 
 			addProfile(new TrackerProfile(FlxTypedEmitter, ["emitting", "frequency", "bounce"], [FlxTypedGroup, FlxRect]));
 
-			// Inputs
 			#if FLX_MOUSE
 			addProfile(new TrackerProfile(FlxMouse, [
 				"screenX",
@@ -155,10 +140,9 @@ class Tracker extends Watch
 				"pressed",
 				"justPressed",
 				"justReleased"
-				#if FLX_MOUSE_ADVANCED, "pressedMiddle", "justPressedMiddle", "justReleasedMiddle", "pressedRight", "justPressedRight", "justReleasedRight"
-				#end
 			], [FlxBasePoint]));
 			#end
+
 			#if FLX_TOUCH
 			addProfile(new TrackerProfile(FlxTouch, [
 				"screenX",
@@ -170,6 +154,7 @@ class Tracker extends Watch
 				"isActive"
 			], [FlxBasePoint]));
 			#end
+
 			#if FLX_GAMEPAD
 			addProfile(new TrackerProfile(FlxGamepad, ["id", "deadZone", "hat", "ball", "dpadUp", "dpadDown", "dpadLeft", "dpadRight"]));
 			#end
@@ -187,8 +172,7 @@ class Tracker extends Watch
 
 	var _object:Dynamic;
 
-	public function new(Profile:TrackerProfile, ObjectOrClass:Dynamic, ?WindowTitle:String)
-	{
+	public function new(Profile:TrackerProfile, ObjectOrClass:Dynamic, ?WindowTitle:String) {
 		super(true);
 
 		initProfiles();
@@ -202,7 +186,6 @@ class Tracker extends Watch
 
 		resize(200, entriesContainer.height + 30);
 
-		// Small x and y offset
 		x = _numTrackerWindows * 80;
 		y = _numTrackerWindows * 25 + 20;
 		_numTrackerWindows++;
@@ -210,8 +193,7 @@ class Tracker extends Watch
 		FlxG.signals.preStateSwitch.add(close);
 	}
 
-	override public function destroy():Void
-	{
+	override public function destroy():Void {
 		FlxG.signals.preStateSwitch.remove(close);
 		_numTrackerWindows--;
 		objectsBeingTracked.remove(_object);
@@ -219,8 +201,7 @@ class Tracker extends Watch
 		super.destroy();
 	}
 
-	function findProfileByClass(ObjectClass:Class<Dynamic>):TrackerProfile
-	{
+	function findProfileByClass(ObjectClass:Class<Dynamic>):TrackerProfile {
 		for (profile in profiles)
 			if (profile.objectClass == ObjectClass)
 				return profile;
@@ -228,36 +209,30 @@ class Tracker extends Watch
 		return null;
 	}
 
-	function initWatchEntries(Profile:TrackerProfile):Void
-	{
-		if (Profile != null)
-		{
+	function initWatchEntries(Profile:TrackerProfile):Void {
+		if (Profile != null) {
 			addExtensions(Profile);
 			addVariables(Profile.variables);
 		}
 	}
 
-	function addExtensions(Profile:TrackerProfile):Void
-	{
+	function addExtensions(Profile:TrackerProfile):Void {
 		if (Profile.extensions == null)
 			return;
 
-		for (extension in Profile.extensions)
-		{
+		for (extension in Profile.extensions) {
 			if (extension == null)
 				continue;
 
 			var extensionProfile:TrackerProfile = findProfileByClass(extension);
-			if (extensionProfile != null)
-			{
+			if (extensionProfile != null) {
 				addVariables(extensionProfile.variables);
-				addExtensions(extensionProfile); // recurse
+				addExtensions(extensionProfile);
 			}
 		}
 	}
 
-	function addVariables(Variables:Array<String>):Void
-	{
+	function addVariables(Variables:Array<String>):Void {
 		if (Variables == null)
 			return;
 
@@ -267,21 +242,18 @@ class Tracker extends Watch
 	#end
 }
 
-class TrackerProfile
-{
+class TrackerProfile {
 	public var objectClass:Class<Dynamic>;
 	public var variables:Array<String>;
 	public var extensions:Array<Class<Dynamic>>;
 
-	public function new(ObjectClass:Class<Dynamic>, ?Variables:Array<String>, ?Extensions:Array<Class<Dynamic>>)
-	{
+	public function new(ObjectClass:Class<Dynamic>, ?Variables:Array<String>, ?Extensions:Array<Class<Dynamic>>) {
 		objectClass = ObjectClass;
 		variables = Variables;
 		extensions = Extensions;
 	}
 
-	public function toString():String
-	{
+	public function toString():String {
 		return FlxStringUtil.getDebugString([
 			LabelValuePair.weak("variables", variables),
 			LabelValuePair.weak("extensions", extensions)

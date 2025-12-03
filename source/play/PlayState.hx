@@ -289,12 +289,18 @@ public function botplayAutoHit()
             playerStrums.pressKey(note.direction);
             playerStrums.hitNote(note);
             continue;
-        }
+        }// PHONE NOTE
 
-        // NORMAL NOTE
-        playerStrums.pressKey(note.direction);
-        playerStrums.hitNote(note);
-        playerStrums.releaseKey(note.direction);
+if (note.noteStyle == "phone")
+{
+    botplayPhoneHit(note);
+}
+
+// NORMAL NOTE
+playerStrums.pressKey(note.direction);
+playerStrums.hitNote(note);
+playerStrums.releaseKey(note.direction);
+
     }
 
     // ================================
@@ -2947,4 +2953,38 @@ override public function update(elapsed:Float):Void {
 		}
 		updateAccuracy();
 	}
+
+/**
+ * Botplay-only version of phone note behavior.
+ * Forces dodge animation + opponent throw.
+ */
+private function botplayPhoneHit(note:Note):Void
+{
+    if (playingChar == null || note == null)
+        return;
+
+    var char = playingChar;
+
+    var hasDodge = char.animation.getByName("dodge") != null;
+    var hasHey   = char.animation.getByName("hey") != null;
+
+    // BOTPLAY dodge animation
+    char.playAnim(hasDodge ? "dodge" : (hasHey ? "hey" : "singUPmiss"), true);
+
+    // GF cheer
+    if (gf != null)
+        gf.playAnim("cheer", true);
+
+    // Opponent throws phone
+    if (!note.phoneHit && opposingChar != null)
+    {
+        var throwAnim = opposingChar.animation.getByName("singThrow") != null
+            ? "singThrow" : "singSmash";
+
+        opposingChar.playAnim(throwAnim, true);
+    }
+
+    // Mark phone hit
+    note.phoneHit = true;
+}
 }

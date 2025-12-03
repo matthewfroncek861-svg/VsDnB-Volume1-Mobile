@@ -75,7 +75,6 @@ jobs:
               for subdir, dirs, files in os.walk(root):
                   for f in files:
                       if f.endswith((".h", ".hpp", ".cpp", ".mm")):
-                path = os.path.join(subdir, f)
                           try:
                               with open(path, "r", encoding="utf-8") as file:
                                   txt = file.read()
@@ -96,3 +95,15 @@ jobs:
       - name: Build iOS (Final)
         run: |
           haxelib run lime build ios -nosign -DofficialBuild -DMOBILE_BUILD -D HXCPP_CPP11
+
+      - name: Package IPA
+        run: |
+          cd export/release/ios/build/*-iphoneos
+          mkdir Payload
+          mv *.app Payload/
+          zip -r ~/ios-${{ steps.ver.outputs.version }}.ipa Payload
+
+      - uses: actions/upload-artifact@main
+        with:
+          name: ios-ipa
+          path: ~/ios-*.ipa
